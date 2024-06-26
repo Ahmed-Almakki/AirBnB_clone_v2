@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 """ Console Module """
 import cmd
+from ast import literal_eval
 import sys
 from models.base_model import BaseModel
 from models.__init__ import storage
@@ -73,7 +74,7 @@ class HBNBCommand(cmd.Cmd):
                 pline = pline[2].strip()  # pline is now str
                 if pline:
                     # check for *args or **kwargs
-                    if pline[0] is '{' and pline[-1] is'}'\
+                    if pline[0] == '{' and pline[-1] == '}'\
                             and type(eval(pline)) is dict:
                         _args = pline
                     else:
@@ -113,18 +114,44 @@ class HBNBCommand(cmd.Cmd):
         """ Overrides the emptyline method of CMD """
         pass
 
-    def do_create(self, args):
+    def do_create(self, kwargs):
         """ Create an object of any class"""
-        if not args:
+        check = kwargs.split()
+        if "=" in check[0]:
             print("** class name missing **")
             return
-        elif args not in HBNBCommand.classes:
-            print("** class doesn't exist **")
-            return
-        new_instance = HBNBCommand.classes[args]()
-        storage.save()
-        print(new_instance.id)
-        storage.save()
+        else:
+            k = [kwargs.split()[0]]
+            k.append({i.split("=")[0] : i.split("=")[1] \
+                     for i in kwargs.split()[1:]})
+            for ke, vl in k[1].items():
+                if type(vl) is str:
+                    b = ""
+                    co = 0
+                    for i in vl:
+                        if i == "_":
+                            b = b + " "
+                        elif i == '"':
+                            b = b + "\\"
+                            b = b + '"'
+                        else:
+                            b = b + vl[co]
+                        co += 1
+                    vl = b
+                elif type(vl) is float:
+                    if "." not in str(vl):
+                        vl = str(vl) + ".0"
+                        vl = float(vl)
+                if vl in [str, float, int]:
+                    k[ke] = vl
+
+            if k[0] not in HBNBCommand.classes:
+                print("** class doesn't exist **")
+                return
+            new_instance = HBNBCommand.classes[k[0]]()
+            storage.save()
+            print(new_instance.id)
+            storage.save()
 
     def help_create(self):
         """ Help information for the create method """
@@ -272,7 +299,7 @@ class HBNBCommand(cmd.Cmd):
                 args.append(v)
         else:  # isolate args
             args = args[2]
-            if args and args[0] is '\"':  # check for quoted arg
+            if args and args[0] == '\"':  # check for quoted arg
                 second_quote = args.find('\"', 1)
                 att_name = args[1:second_quote]
                 args = args[second_quote + 1:]
@@ -280,10 +307,10 @@ class HBNBCommand(cmd.Cmd):
             args = args.partition(' ')
 
             # if att_name was not quoted arg
-            if not att_name and args[0] is not ' ':
+            if not att_name and args[0] != ' ':
                 att_name = args[0]
             # check for quoted val arg
-            if args[2] and args[2][0] is '\"':
+            if args[2] and args[2][0] == '\"':
                 att_val = args[2][1:args[2].find('\"', 1)]
 
             # if att_val was not quoted arg
