@@ -131,9 +131,7 @@ class HBNBCommand(cmd.Cmd):
                     for i in vl:
                         if i == "_":
                             b = b + " "
-                        elif i == '"':
-                            b = b + "\\"
-                            b = b + '"'
+
                         else:
                             b = b + vl[co]
                         co += 1
@@ -147,8 +145,8 @@ class HBNBCommand(cmd.Cmd):
 
             if k[0] not in HBNBCommand.classes:
                 print("** class doesn't exist **")
-                return
-            new_instance = HBNBCommand.classes[k[0]]()
+                return 
+            new_instance = HBNBCommand.classes[k[0]](k)
             storage.save()
             print(new_instance.id)
             storage.save()
