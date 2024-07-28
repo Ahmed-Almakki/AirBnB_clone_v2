@@ -9,8 +9,12 @@ app.config['SERVER_NAME'] = '0.0.0.0:5000'
 
 @app.route('/', strict_slashes=False)
 def hello():
-    """ hello function"""
     return "Hello HBNB!"
+
+
+@app.route("/hbnb", strict_slashes=False)
+def hbnb():
+    return "HBNB"
 
 
 app.run()
